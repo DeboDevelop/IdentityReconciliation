@@ -1,8 +1,9 @@
 require('dotenv').config({ path: __dirname+'/.env' });
-import express, { Request, Response } from 'express';
+import express from 'express';
 import cors from 'cors';
 import pool from './database';
 import logger from "./logger";
+import contractRoutes from './services/contract/routes';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,9 +11,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
-app.get('/', (req: Request, res: Response) => {
-    res.json('Hello World!!!');
-});
+app.use('/', contractRoutes);
 
 // Graceful termination function
 const shutdown = async () => {
