@@ -40,3 +40,5 @@ process.on('unhandledRejection', (reason, promise) => {
     // Recommended to close the server and exit the process when there are unhandled promise rejections
     shutdown();
 });
+
+export default app;
