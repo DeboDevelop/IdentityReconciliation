@@ -198,3 +198,25 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
         }
     });  
 });
+
+describe('POST /identify - new Contract', () => {
+    it('Email and Phone Number', async () => {
+        const input: ContractInput = {
+            email: "mcfly@hillvalley.edu",
+            phoneNumber: "123456"
+        };
+        const expectedOutput: ContractOutput = {
+            contact: {
+                primaryContatctId: 0,
+                emails: ["mcfly@hillvalley.edu"],
+                phoneNumbers: ["123456"],
+                secondaryContactIds: [],
+            }
+        }
+        const response = await request.post('/identify').send(input);
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('contact').that.is.a('object');
+        expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
+        expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
+    });
+});
