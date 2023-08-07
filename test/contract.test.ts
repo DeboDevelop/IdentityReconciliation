@@ -4,6 +4,7 @@ import app from '../src/index';
 import pool from "../src/database";
 import { QueryResult } from 'pg';
 import logger from '../src/logger';
+import { ContractInput, ContractOutput } from "../src/@types/contract";
 
 const request = supertest(app);
 
@@ -17,7 +18,55 @@ async function insertContract(values: (string | Date | null)[]): Promise<QueryRe
     return await pool.query(insertQuery, values);
 }
 
-describe('Contract', () => {
+describe('POST /identify input validation', () => {
+    it('Invalid email', async () => {
+        const input: ContractInput = {
+            email: "mcfly@hillvalley",
+            phoneNumber: "123456"
+        };
+        try {
+            const result = await request.post('/identify').send(input);
+            expect(result.status).to.equal(400);
+            expect(result.body).to.have.property('error').that.is.a('string');
+            expect(result.body.error).to.equal('"email" must be a valid email');
+        } catch(error) {
+            logger.error("Error while testing invalid inputs")
+            logger.error(error)
+        }
+    });
+    it('Invalid phoneNumber', async () => {
+        const input: ContractInput = {
+            email: "mcfly@hillvalley.edu",
+            phoneNumber: "+123456"
+        };
+        try {
+            const result = await request.post('/identify').send(input);
+            expect(result.status).to.equal(400);
+            expect(result.body).to.have.property('error').that.is.a('string');
+            expect(result.body.error).to.equal('"phoneNumber\" with value \"+123456\" fails to match the required pattern: /^\\d+$/');
+        } catch(error) {
+            logger.error("Error while testing invalid inputs")
+            logger.error(error)
+        }
+    });
+    it('Null email and phoneNumber', async () => {
+        const input: ContractInput = {
+            email: null,
+            phoneNumber: null
+        };
+        try {
+            const result = await request.post('/identify').send(input);
+            expect(result.status).to.equal(400);
+            expect(result.body).to.have.property('error').that.is.a('string');
+            expect(result.body.error).to.equal('Both Email and phoneNumber can\'t be null');
+        } catch(error) {
+            logger.error("Error while testing invalid inputs")
+            logger.error(error)
+        }
+    });
+});
+
+describe('POST /identify Example 1', () => {
     let contractIds: number[] = [];
     before(async () => {
         try {
@@ -52,24 +101,34 @@ describe('Contract', () => {
             logger.error(error);
         }
     });
-    describe('POST /identify', () => {
-        it('should result in server error', async () => {
-            const response = await request.post('/identify');
-            expect(response.status).to.equal(500);
-            expect(response.body).to.have.property('message').that.is.a('string');
-            expect(response.body.message).to.equal('Route is not yet implemented');
-        });
+    it('POST /identify', async () => {
+        const input: ContractInput = {
+            email: "mcfly@hillvalley.edu",
+            phoneNumber: "123456"
+        };
+        const expectedOutput: ContractOutput = {
+            contact: {
+                primaryContatctId: contractIds[0],
+                emails: ["lorraine@hillvalley.edu","mcfly@hillvalley.edu"],
+                phoneNumbers: ["123456"],
+                secondaryContactIds: contractIds.slice(1),
+            }
+        }
+        const response = await request.post('/identify').send(input);
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('contact').that.is.a('object');
+        expect(response.body.contact.primaryContatctId).to.equal(expectedOutput.contact.primaryContatctId);
+        expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
+        expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
+        expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
     });
     after(async () => {
         try {
             const placeholders = contractIds.map((_, index) => `$${index + 1}`).join(', ');
             const deleteQuery = `
-                DELETE FROM Contract WHERE id IN (${placeholders})
-                RETURNING *; -- Return deleted rows for printing output
+                DELETE FROM Contract WHERE id IN (${placeholders});
             `;
-            const result = await pool.query(deleteQuery, contractIds);
-            logger.info('Deleted rows:');
-            logger.info(result.rows);
+            await pool.query(deleteQuery, contractIds);
         } catch (error) {
             logger.error('Error deleting data:');
             logger.error(error);
