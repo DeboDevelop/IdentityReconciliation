@@ -66,7 +66,7 @@ describe('POST /identify input validation', () => {
     });
 });
 
-describe('POST /identify Example 1', () => {
+describe('POST /identify - 1 Primary, 1 Secondary', () => {
     let contractIds: number[] = [];
     before(async () => {
         try {
@@ -101,10 +101,73 @@ describe('POST /identify Example 1', () => {
             logger.error(error);
         }
     });
-    it('POST /identify', async () => {
+    it('Email and Phone Number', async () => {
         const input: ContractInput = {
             email: "mcfly@hillvalley.edu",
             phoneNumber: "123456"
+        };
+        const expectedOutput: ContractOutput = {
+            contact: {
+                primaryContatctId: contractIds[0],
+                emails: ["lorraine@hillvalley.edu","mcfly@hillvalley.edu"],
+                phoneNumbers: ["123456"],
+                secondaryContactIds: contractIds.slice(1),
+            }
+        }
+        const response = await request.post('/identify').send(input);
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('contact').that.is.a('object');
+        expect(response.body.contact.primaryContatctId).to.equal(expectedOutput.contact.primaryContatctId);
+        expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
+        expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
+        expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
+    });
+    it('Phone Number', async () => {
+        const input: ContractInput = {
+            email: null,
+            phoneNumber: "123456"
+        };
+        const expectedOutput: ContractOutput = {
+            contact: {
+                primaryContatctId: contractIds[0],
+                emails: ["lorraine@hillvalley.edu","mcfly@hillvalley.edu"],
+                phoneNumbers: ["123456"],
+                secondaryContactIds: contractIds.slice(1),
+            }
+        }
+        const response = await request.post('/identify').send(input);
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('contact').that.is.a('object');
+        expect(response.body.contact.primaryContatctId).to.equal(expectedOutput.contact.primaryContatctId);
+        expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
+        expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
+        expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
+    });
+    it('Email - lorraine@hillvalley.edu', async () => {
+        const input: ContractInput = {
+            email: "lorraine@hillvalley.edu",
+            phoneNumber: null
+        };
+        const expectedOutput: ContractOutput = {
+            contact: {
+                primaryContatctId: contractIds[0],
+                emails: ["lorraine@hillvalley.edu","mcfly@hillvalley.edu"],
+                phoneNumbers: ["123456"],
+                secondaryContactIds: contractIds.slice(1),
+            }
+        }
+        const response = await request.post('/identify').send(input);
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('contact').that.is.a('object');
+        expect(response.body.contact.primaryContatctId).to.equal(expectedOutput.contact.primaryContatctId);
+        expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
+        expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
+        expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
+    });
+    it('Email - mcfly@hillvalley.edu', async () => {
+        const input: ContractInput = {
+            email: "mcfly@hillvalley.edu",
+            phoneNumber: null
         };
         const expectedOutput: ContractOutput = {
             contact: {
