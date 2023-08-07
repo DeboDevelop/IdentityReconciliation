@@ -1,10 +1,9 @@
-import { Request, Response, Router } from 'express';
+import { Router } from 'express';
+import { identityController } from "./controller"
 import validateEmailAndPhoneNumber from "./middleware"
 
 const router = Router();
 
-router.post('/identify', validateEmailAndPhoneNumber, (req: Request, res: Response) => {
-    res.status(500).json({ message: 'Route is not yet implemented' });
-});
+router.post('/identify', validateEmailAndPhoneNumber, identityController);
 
 export default router;
