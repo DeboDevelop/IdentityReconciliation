@@ -8,7 +8,7 @@ import { ContractInput, ContractOutput } from "../src/@types/contract";
 
 const request = supertest(app);
 
-async function insertContract(values: (string | Date | null)[]): Promise<QueryResult> {
+async function insertContract(values: any[]): Promise<QueryResult> {
     const insertQuery = `
         INSERT INTO Contract (phoneNumber, email, linkedId, linkPrecedence, createdAt, updatedAt, deletedAt)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -284,4 +284,167 @@ describe('POST /identify - new secondary Contract', () => {
             logger.error(error);
         }
     });  
+});
+
+describe('POST /identify - Multiple Primary and Secondary', () => {
+    let contractIds: number[] = [];
+    before(async () => {
+        try {
+            let primaryValues = [
+                '123456',
+                'debajyotid1@gmail.com',
+                null,
+                'primary',
+                new Date(),
+                new Date(),
+                null,
+            ];
+    
+            let primaryResult: QueryResult = await insertContract(primaryValues);
+            contractIds.push(primaryResult.rows[0].id);
+            let primaryContractId = primaryResult.rows[0].id
+    
+            let secondaryValues = [
+                [
+                    '123456',
+                    'debajyotid2@gmail.com',
+                    primaryContractId,
+                    'secondary',
+                    new Date(),
+                    new Date(),
+                    null,
+                ],
+                [
+                    '123789',
+                    'debajyotid1@gmail.com',
+                    primaryContractId,
+                    'secondary',
+                    new Date(),
+                    new Date(),
+                    null,
+                ],
+            ];
+            for (let secondaryValue of secondaryValues) {
+                const secondaryResult: QueryResult = await insertContract(secondaryValue);
+                contractIds.push(secondaryResult.rows[0].id);
+            }
+
+            primaryValues = [
+                '654321',
+                'debajyotid3@gmail.com',
+                null,
+                'primary',
+                new Date(),
+                new Date(),
+                null,
+            ];
+    
+            primaryResult = await insertContract(primaryValues);
+            contractIds.push(primaryResult.rows[0].id);
+            let primaryContractId2 = primaryResult.rows[0].id
+    
+            secondaryValues = [
+                [
+                    '987654',
+                    'debajyotid3@gmail.com',
+                    primaryContractId2,
+                    'secondary',
+                    new Date(),
+                    new Date(),
+                    null,
+                ],
+                [
+                    '654321',
+                    'debajyotid4@gmail.com',
+                    primaryContractId2,
+                    'secondary',
+                    new Date(),
+                    new Date(),
+                    null,
+                ],
+            ];
+            for (let secondaryValue of secondaryValues) {
+                const secondaryResult: QueryResult = await insertContract(secondaryValue);
+                contractIds.push(secondaryResult.rows[0].id);
+            }
+        } catch (error) {
+            logger.error('Error inserting data:');
+            logger.error(error);
+        }
+    });
+    it('2 Primary', async () => {
+        const input: ContractInput = {
+            email: "debajyotid3@gmail.com",
+            phoneNumber: "123456"
+        };
+        const expectedOutput: ContractOutput = {
+            contact: {
+                primaryContractId: contractIds[0],
+                emails: ["debajyotid1@gmail.com","debajyotid2@gmail.com", "debajyotid3@gmail.com", "debajyotid4@gmail.com"],
+                phoneNumbers: ["123456", "123789","654321", "987654"],
+                secondaryContactIds: contractIds.slice(1),
+            }
+        }
+        const response = await request.post('/identify').send(input);
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('contact').that.is.a('object');
+        expect(response.body.contact.primaryContractId).to.equal(expectedOutput.contact.primaryContractId);
+        expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
+        expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
+        expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
+    });
+    it('1 Primary, 1 Secondary', async () => {
+        const input: ContractInput = {
+            email: "debajyotid2@gmail.com",
+            phoneNumber: "654321"
+        };
+        const expectedOutput: ContractOutput = {
+            contact: {
+                primaryContractId: contractIds[0],
+                emails: ["debajyotid1@gmail.com","debajyotid2@gmail.com", "debajyotid3@gmail.com", "debajyotid4@gmail.com"],
+                phoneNumbers: ["123456", "123789","654321", "987654"],
+                secondaryContactIds: contractIds.slice(1),
+            }
+        }
+        const response = await request.post('/identify').send(input);
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('contact').that.is.a('object');
+        expect(response.body.contact.primaryContractId).to.equal(expectedOutput.contact.primaryContractId);
+        expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
+        expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
+        expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
+    });
+    it('2 Secondary', async () => {
+        const input: ContractInput = {
+            email: "debajyotid2@gmail.com",
+            phoneNumber: "987654"
+        };
+        const expectedOutput: ContractOutput = {
+            contact: {
+                primaryContractId: contractIds[0],
+                emails: ["debajyotid1@gmail.com","debajyotid2@gmail.com", "debajyotid3@gmail.com", "debajyotid4@gmail.com"],
+                phoneNumbers: ["123456", "123789","654321", "987654"],
+                secondaryContactIds: contractIds.slice(1),
+            }
+        }
+        const response = await request.post('/identify').send(input);
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('contact').that.is.a('object');
+        expect(response.body.contact.primaryContractId).to.equal(expectedOutput.contact.primaryContractId);
+        expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
+        expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
+        expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
+    });
+    after(async () => {
+        try {
+            const placeholders = contractIds.map((_, index) => `$${index + 1}`).join(', ');
+            const deleteQuery = `
+                DELETE FROM Contract WHERE id IN (${placeholders});
+            `;
+            await pool.query(deleteQuery, contractIds);
+        } catch (error) {
+            logger.error('Error deleting data:');
+            logger.error(error);
+        }
+    });
 });
