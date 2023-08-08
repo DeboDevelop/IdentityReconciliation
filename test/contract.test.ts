@@ -219,4 +219,15 @@ describe('POST /identify - new Contract', () => {
         expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
         expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
     });
+    after(async () => {
+        try {
+            const deleteQuery = `
+                DELETE FROM Contract WHERE email = $1;
+            `;
+            await pool.query(deleteQuery, ["mcfly@hillvalley.edu"]);
+        } catch (error) {
+            logger.error('Error deleting data:');
+            logger.error(error);
+        }
+    });  
 });
