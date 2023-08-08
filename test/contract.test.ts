@@ -18,6 +18,16 @@ async function insertContract(values: any[]): Promise<QueryResult> {
     return await pool.query(insertQuery, values);
 }
 
+async function truncateContract() {
+    try {
+        const truncateQuery = 'TRUNCATE TABLE Contract;';
+        await pool.query(truncateQuery);
+    } catch (error) {
+        logger.error('Error deleting data:');
+        logger.error(error);
+    }
+}
+
 describe('POST /identify input validation', () => {
     it('Invalid email', async () => {
         const input: ContractInput = {
@@ -186,16 +196,7 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
         expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
     });
     after(async () => {
-        try {
-            const placeholders = contractIds.map((_, index) => `$${index + 1}`).join(', ');
-            const deleteQuery = `
-                DELETE FROM Contract WHERE id IN (${placeholders});
-            `;
-            await pool.query(deleteQuery, contractIds);
-        } catch (error) {
-            logger.error('Error deleting data:');
-            logger.error(error);
-        }
+        truncateContract();
     });  
 });
 
@@ -220,15 +221,7 @@ describe('POST /identify - new primary Contract', () => {
         expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
     });
     after(async () => {
-        try {
-            const deleteQuery = `
-                DELETE FROM Contract WHERE email IN ($1);
-            `;
-            await pool.query(deleteQuery, ["mcfly@hillvalley.edu"]);
-        } catch (error) {
-            logger.error('Error deleting data:');
-            logger.error(error);
-        }
+        truncateContract();
     });  
 });
 
@@ -274,15 +267,7 @@ describe('POST /identify - new secondary Contract', () => {
         expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
     });
     after(async () => {
-        try {
-            const deleteQuery = `
-                DELETE FROM Contract WHERE email IN ($1, $2);
-            `;
-            await pool.query(deleteQuery, ["lorraine@hillvalley.edu", "mcfly@hillvalley.edu"]);
-        } catch (error) {
-            logger.error('Error deleting data:');
-            logger.error(error);
-        }
+        truncateContract();
     });  
 });
 
@@ -436,15 +421,6 @@ describe('POST /identify - Multiple Primary and Secondary', () => {
         expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
     });
     after(async () => {
-        try {
-            const placeholders = contractIds.map((_, index) => `$${index + 1}`).join(', ');
-            const deleteQuery = `
-                DELETE FROM Contract WHERE id IN (${placeholders});
-            `;
-            await pool.query(deleteQuery, contractIds);
-        } catch (error) {
-            logger.error('Error deleting data:');
-            logger.error(error);
-        }
+        truncateContract();
     });
 });
