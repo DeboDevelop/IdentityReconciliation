@@ -4,7 +4,7 @@ import { ContractOutput } from "../../@types/contract";
 export function identityController(req: Request, res: Response) {
     const output: ContractOutput = {
         contact: {
-            primaryContatctId: 0,
+            primaryContractId: 0,
             emails: [],
             phoneNumbers: [],
             secondaryContactIds: [],

@@ -108,7 +108,7 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
         };
         const expectedOutput: ContractOutput = {
             contact: {
-                primaryContatctId: contractIds[0],
+                primaryContractId: contractIds[0],
                 emails: ["lorraine@hillvalley.edu","mcfly@hillvalley.edu"],
                 phoneNumbers: ["123456"],
                 secondaryContactIds: contractIds.slice(1),
@@ -117,7 +117,7 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
         const response = await request.post('/identify').send(input);
         expect(response.status).to.equal(200);
         expect(response.body).to.have.property('contact').that.is.a('object');
-        expect(response.body.contact.primaryContatctId).to.equal(expectedOutput.contact.primaryContatctId);
+        expect(response.body.contact.primaryContractId).to.equal(expectedOutput.contact.primaryContractId);
         expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
         expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
         expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
@@ -129,7 +129,7 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
         };
         const expectedOutput: ContractOutput = {
             contact: {
-                primaryContatctId: contractIds[0],
+                primaryContractId: contractIds[0],
                 emails: ["lorraine@hillvalley.edu","mcfly@hillvalley.edu"],
                 phoneNumbers: ["123456"],
                 secondaryContactIds: contractIds.slice(1),
@@ -138,7 +138,7 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
         const response = await request.post('/identify').send(input);
         expect(response.status).to.equal(200);
         expect(response.body).to.have.property('contact').that.is.a('object');
-        expect(response.body.contact.primaryContatctId).to.equal(expectedOutput.contact.primaryContatctId);
+        expect(response.body.contact.primaryContractId).to.equal(expectedOutput.contact.primaryContractId);
         expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
         expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
         expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
@@ -150,7 +150,7 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
         };
         const expectedOutput: ContractOutput = {
             contact: {
-                primaryContatctId: contractIds[0],
+                primaryContractId: contractIds[0],
                 emails: ["lorraine@hillvalley.edu","mcfly@hillvalley.edu"],
                 phoneNumbers: ["123456"],
                 secondaryContactIds: contractIds.slice(1),
@@ -159,7 +159,7 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
         const response = await request.post('/identify').send(input);
         expect(response.status).to.equal(200);
         expect(response.body).to.have.property('contact').that.is.a('object');
-        expect(response.body.contact.primaryContatctId).to.equal(expectedOutput.contact.primaryContatctId);
+        expect(response.body.contact.primaryContractId).to.equal(expectedOutput.contact.primaryContractId);
         expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
         expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
         expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
@@ -171,7 +171,7 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
         };
         const expectedOutput: ContractOutput = {
             contact: {
-                primaryContatctId: contractIds[0],
+                primaryContractId: contractIds[0],
                 emails: ["lorraine@hillvalley.edu","mcfly@hillvalley.edu"],
                 phoneNumbers: ["123456"],
                 secondaryContactIds: contractIds.slice(1),
@@ -180,7 +180,7 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
         const response = await request.post('/identify').send(input);
         expect(response.status).to.equal(200);
         expect(response.body).to.have.property('contact').that.is.a('object');
-        expect(response.body.contact.primaryContatctId).to.equal(expectedOutput.contact.primaryContatctId);
+        expect(response.body.contact.primaryContractId).to.equal(expectedOutput.contact.primaryContractId);
         expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
         expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
         expect(response.body.contact.secondaryContactIds).to.equal(expectedOutput.contact.secondaryContactIds);
@@ -199,7 +199,7 @@ describe('POST /identify - 1 Primary, 1 Secondary', () => {
     });  
 });
 
-describe('POST /identify - new Contract', () => {
+describe('POST /identify - new primary Contract', () => {
     it('Email and Phone Number', async () => {
         const input: ContractInput = {
             email: "mcfly@hillvalley.edu",
@@ -207,7 +207,7 @@ describe('POST /identify - new Contract', () => {
         };
         const expectedOutput: ContractOutput = {
             contact: {
-                primaryContatctId: 0,
+                primaryContractId: 0,
                 emails: ["mcfly@hillvalley.edu"],
                 phoneNumbers: ["123456"],
                 secondaryContactIds: [],
@@ -222,9 +222,63 @@ describe('POST /identify - new Contract', () => {
     after(async () => {
         try {
             const deleteQuery = `
-                DELETE FROM Contract WHERE email = $1;
+                DELETE FROM Contract WHERE email IN ($1);
             `;
             await pool.query(deleteQuery, ["mcfly@hillvalley.edu"]);
+        } catch (error) {
+            logger.error('Error deleting data:');
+            logger.error(error);
+        }
+    });  
+});
+
+describe('POST /identify - new secondary Contract', () => {
+    let primaryContractId: number;
+    before(async () => {
+        try {
+            const primaryValues = [
+                '123456',
+                'lorraine@hillvalley.edu',
+                null,
+                'primary',
+                new Date(),
+                new Date(),
+                null,
+            ];
+    
+            const primaryResult: QueryResult = await insertContract(primaryValues);
+            primaryContractId = primaryResult.rows[0].id;
+        } catch (error) {
+            logger.error('Error inserting data:');
+            logger.error(error);
+        }
+    });
+    it('Email and Phone Number', async () => {
+        const input: ContractInput = {
+            email: "mcfly@hillvalley.edu",
+            phoneNumber: "123456"
+        };
+        const expectedOutput: ContractOutput = {
+            contact: {
+                primaryContractId: primaryContractId,
+                emails: ["lorraine@hillvalley.edu", "mcfly@hillvalley.edu"],
+                phoneNumbers: ["123456"],
+                secondaryContactIds: [],
+            }
+        }
+        const response = await request.post('/identify').send(input);
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('contact').that.is.a('object');
+        expect(response.body.contact.primaryContractId).to.equal(expectedOutput.contact.primaryContractId);
+        expect(response.body.contact.emails).to.equal(expectedOutput.contact.emails);
+        expect(response.body.contact.phoneNumbers).to.equal(expectedOutput.contact.phoneNumbers);
+    });
+    after(async () => {
+        try {
+            const deleteQuery = `
+                DELETE FROM Contract WHERE email IN ($1, $2);
+            `;
+            await pool.query(deleteQuery, ["lorraine@hillvalley.edu", "mcfly@hillvalley.edu"]);
         } catch (error) {
             logger.error('Error deleting data:');
             logger.error(error);

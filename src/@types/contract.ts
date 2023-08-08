@@ -5,7 +5,7 @@ export interface ContractInput {
 
 export interface ContractOutput {
     contact:{
-        primaryContatctId: number,
+        primaryContractId: number,
         emails: string[],
         phoneNumbers: string[],
         secondaryContactIds: number[],
