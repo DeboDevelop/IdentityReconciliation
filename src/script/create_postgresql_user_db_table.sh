@@ -29,13 +29,13 @@ create_contract_table() {
   sudo -u postgres psql -d your_database -c "
     CREATE TABLE Contract (
       id SERIAL PRIMARY KEY,
-      phoneNumber VARCHAR,
+      phone_number VARCHAR,
       email VARCHAR,
-      linkedId INT REFERENCES Contract(id),
-      linkPrecedence Precedence,
-      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      deletedAt TIMESTAMP
+      linked_id INT REFERENCES Contract(id),
+      link_precedence Precedence,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      deleted_at TIMESTAMP
     );"
 }
 

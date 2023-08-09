@@ -17,12 +17,23 @@ export interface Contract {
 export interface DBContract {
     id: number;
     email: string;
-    phonenumber: string;
-    linkedid: number | null;
-    linkprecedence: 'primary' | 'secondary';
-    createdat: Date;
-    updatedat: Date;
-    deletedat: Date | null;
+    phone_number: string;
+    linked_id: number | null;
+    link_precedence: 'primary' | 'secondary';
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
+}
+
+export interface InitialQueryContract {
+    contractId: number;
+    contractEmail: string;
+    contractPhoneNumber: string;
+    contractLinkedId: number | null;
+    contractLinkPrecedence: 'primary' | 'secondary';
+    parentContractEmail: string | null;
+    parentContractPhoneNumber: string | null;
+    parentContractLinkPrecedence: 'primary' | 'secondary' | null;
 }
 
 export interface ContractOutput {

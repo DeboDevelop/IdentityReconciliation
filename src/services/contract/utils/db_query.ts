@@ -1,18 +1,18 @@
-import { Contract, DBContract } from "../../../@types/contract";
+import { InitialQueryContract, DBContract } from "../../../@types/contract";
 import { QueryResult } from 'pg';
 import pool from '../../../database';
 
-export async function getContracts(email: string | null, phoneNumber: string | null): Promise<Contract[]> {
-    let query = "SELECT c1.id AS contractId, \
-                    c1.email AS contractEmail, \
-                    c1.phoneNumber AS contractPhoneNumber, \
-                    c1.linkedId AS contractLinkedId, \
-                    c1.linkPrecedence AS contractLinkPrecedence, \
-                    c2.email AS parentContractEmail, \
-                    c2.phoneNumber AS parentContractPhoneNumber, \
-                    c2.linkPrecedence AS parentContractLinkPrecedence \
+export async function getContracts(email: string | null, phoneNumber: string | null): Promise<InitialQueryContract[]> {
+    let query = "SELECT c1.id AS \"contractId\", \
+                    c1.email AS \"contractEmail\", \
+                    c1.phone_number AS \"contractPhoneNumber\", \
+                    c1.linked_id AS \"contractLinkedId\", \
+                    c1.link_precedence AS \"contractLinkPrecedence\", \
+                    c2.email AS \"parentContractEmail\", \
+                    c2.phone_number AS \"parentContractPhoneNumber\", \
+                    c2.link_precedence AS \"parentContractLinkPrecedence\" \
                 FROM Contract c1 \
-                LEFT JOIN Contract c2 ON c1.linkedId = c2.id \
+                LEFT JOIN Contract c2 ON c1.linked_id = c2.id \
                 WHERE ";
   
     if (email !== null) {
@@ -24,16 +24,16 @@ export async function getContracts(email: string | null, phoneNumber: string | n
     }
   
     if (phoneNumber !== null) {
-        query += `c1.phoneNumber = '${phoneNumber}'`;
+        query += `c1.phone_number = '${phoneNumber}'`;
     }
-  
-    const result: QueryResult<Contract> = await pool.query(query);
+    
+    const result: QueryResult<InitialQueryContract> = await pool.query(query);
     return result.rows;
 }
 
 async function insertContract(values: any[]): Promise<QueryResult> {
     const insertQuery = `
-        INSERT INTO Contract (phoneNumber, email, linkedId, linkPrecedence, createdAt, updatedAt, deletedAt)
+        INSERT INTO Contract (phone_number, email, linked_id, link_precedence, created_at, updated_at, deleted_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *;
     `;
