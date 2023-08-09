@@ -4,6 +4,7 @@ import logger from "../../logger";
 import {
     createPrimaryContract,
     getContractsByEmailAndPhoneNumber,
+    getContractsById,
     updateSecondaryContract,
 } from "./utils/db_query";
 import {
@@ -14,29 +15,24 @@ import {
 export async function identityController(req: Request, res: Response) {
     try {
         const { email, phoneNumber } = req.body;
-        let contracts: InitialQueryContract[] =
+        const contracts: InitialQueryContract[] =
             await getContractsByEmailAndPhoneNumber(email, phoneNumber);
         if (contracts.length == 0) {
-            let dbcontracts = await createPrimaryContract(email, phoneNumber);
+            const dbcontracts = await createPrimaryContract(email, phoneNumber);
             const output: ContractOutput = processContracts(dbcontracts);
             return res.status(200).json(output);
         } else {
-            let [primary, primaryLowPrec, missingEmail, missingPhone] =
+            const [primary, primaryLowPrec, missingEmail, missingPhone] =
                 identifyPrimaryAndMissing(contracts, email, phoneNumber);
             if (primary !== null) {
                 if (primaryLowPrec !== null) {
                     updateSecondaryContract(primary, primaryLowPrec);
                 }
+                const dbcontracts = await getContractsById(primary);
+                const output: ContractOutput = processContracts(dbcontracts);
+                return res.status(200).json(output);
             }
-            const output: ContractOutput = {
-                contact: {
-                    primaryContractId: 0,
-                    emails: [],
-                    phoneNumbers: [],
-                    secondaryContactIds: [],
-                },
-            };
-            return res.status(200).json(output);
+            return res.status(400).json("Bad Request");
         }
     } catch (error) {
         logger.error(error);

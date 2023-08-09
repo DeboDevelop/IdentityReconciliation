@@ -5,26 +5,32 @@ import {
 } from "../../../@types/contract";
 
 export function processContracts(contracts: DBContract[]): ContractOutput {
-    const output: ContractOutput = {
-        contact: {
-            primaryContractId: 0,
-            emails: [],
-            phoneNumbers: [],
-            secondaryContactIds: [],
-        },
+    const output = {
+        primaryContractId: 0,
+        emails: new Set<string>(),
+        phoneNumbers: new Set<string>(),
+        secondaryContactIds: new Set<number>(),
     };
     for (const [i, contract] of contracts.entries()) {
         if (i == 0) {
-            output.contact.primaryContractId = contract.id;
-            output.contact.emails.push(contract.email);
-            output.contact.phoneNumbers.push(contract.phone_number);
+            output.primaryContractId = contract.id;
+            output.emails.add(contract.email);
+            output.phoneNumbers.add(contract.phone_number);
         } else {
-            output.contact.secondaryContactIds.push(contract.id);
-            output.contact.emails.push(contract.email);
-            output.contact.phoneNumbers.push(contract.phone_number);
+            output.secondaryContactIds.add(contract.id);
+            output.emails.add(contract.email);
+            output.phoneNumbers.add(contract.phone_number);
         }
     }
-    return output;
+    const result: ContractOutput = {
+        contact: {
+            primaryContractId: output.primaryContractId,
+            emails: Array.from(output.emails),
+            phoneNumbers: Array.from(output.phoneNumbers),
+            secondaryContactIds: Array.from(output.secondaryContactIds),
+        },
+    };
+    return result;
 }
 
 export function identifyPrimaryAndMissing(

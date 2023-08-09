@@ -74,3 +74,16 @@ export async function updateSecondaryContract(
 
     return await pool.query(updateQuery);
 }
+
+export async function getContractsById(
+    primaryContactId: number
+): Promise<DBContract[]> {
+    const selectQuery = `
+        SELECT * FROM Contract
+        WHERE id = ${primaryContactId} OR linked_id = ${primaryContactId}
+        ORDER BY id ASC;
+    `;
+
+    const result: QueryResult<DBContract> = await pool.query(selectQuery);
+    return result.rows;
+}
