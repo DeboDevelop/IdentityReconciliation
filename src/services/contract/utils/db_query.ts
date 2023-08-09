@@ -1,4 +1,4 @@
-import { Contract } from "../../../@types/contract";
+import { Contract, DBContract } from "../../../@types/contract";
 import { QueryResult } from 'pg';
 import pool from '../../../database';
 
@@ -35,13 +35,13 @@ async function insertContract(values: any[]): Promise<QueryResult> {
     const insertQuery = `
         INSERT INTO Contract (phoneNumber, email, linkedId, linkPrecedence, createdAt, updatedAt, deletedAt)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING id;
+        RETURNING *;
     `;
 
     return await pool.query(insertQuery, values);
 }
 
-export async function createPrimaryContract(email: string, phoneNumber: string): Promise<number> {
+export async function createPrimaryContract(email: string, phoneNumber: string): Promise<DBContract[]> {
     const values = [
         phoneNumber,
         email,
@@ -52,6 +52,6 @@ export async function createPrimaryContract(email: string, phoneNumber: string):
         null,
     ];
     
-    const result: QueryResult<{ id: number }> = await insertContract(values);
-    return result.rows[0].id;
+    const result: QueryResult<DBContract> = await insertContract(values);
+    return result.rows;
   }
