@@ -1,9 +1,9 @@
-require('dotenv').config({ path: __dirname+'/.env' });
-import express from 'express';
-import cors from 'cors';
-import pool from './database';
+require("dotenv").config({ path: __dirname + "/.env" });
+import express from "express";
+import cors from "cors";
+import pool from "./database";
 import logger from "./logger";
-import contractRoutes from './services/contract/routes';
+import contractRoutes from "./services/contract/routes";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -11,17 +11,17 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 
-app.use('/', contractRoutes);
+app.use("/", contractRoutes);
 
 // Graceful termination function
 const shutdown = async () => {
-    logger.info('Received signal to terminate. Closing connections...');
+    logger.info("Received signal to terminate. Closing connections...");
     try {
         await pool.end(); // Close all connections in the pool gracefully
-        logger.info('Database connections closed. Shutting down server...');
+        logger.info("Database connections closed. Shutting down server...");
         process.exit(0);
     } catch (error) {
-        logger.error('Error while closing connections:', error);
+        logger.error("Error while closing connections:", error);
         process.exit(1);
     }
 };
@@ -31,14 +31,14 @@ app.listen(port, () => {
 });
 
 // Handle SIGINT (Ctrl+C) and SIGTERM signals for graceful termination
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled Rejection at:');
+process.on("unhandledRejection", (reason, promise) => {
+    logger.error("Unhandled Rejection at:");
     logger.error(promise);
-    logger.error('reason:');
+    logger.error("reason:");
     logger.error(reason);
     // Recommended to close the server and exit the process when there are unhandled promise rejections
     shutdown();
