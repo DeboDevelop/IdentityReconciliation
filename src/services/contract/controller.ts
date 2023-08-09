@@ -23,17 +23,24 @@ export async function identityController(req: Request, res: Response) {
             const output: ContractOutput = processContracts(dbcontracts);
             return res.status(200).json(output);
         } else {
-            const [primary, primaryLowPrec, missingEmail, missingPhone] =
-                identifyPrimaryAndMissing(contracts, email, phoneNumber);
+            const [
+                primary,
+                primaryLowPrec,
+                missingEmail,
+                missingPhone,
+                primaryEmail,
+                primaryPhoneNumber,
+            ] = identifyPrimaryAndMissing(contracts, email, phoneNumber);
             if (primary !== null) {
                 if (primaryLowPrec !== null) {
                     await updateSecondaryContract(primary, primaryLowPrec);
                 }
-                if (missingEmail) {
-                    await createSecondaryContract(primary, email, phoneNumber);
-                }
-                if (missingPhone) {
-                    await createSecondaryContract(primary, email, phoneNumber);
+                if (missingEmail || missingPhone) {
+                    await createSecondaryContract(
+                        primary,
+                        email === null ? primaryEmail : email,
+                        phoneNumber === null ? primaryPhoneNumber : phoneNumber
+                    );
                 }
                 const dbcontracts = await getContractsById(primary);
                 const output: ContractOutput = processContracts(dbcontracts);

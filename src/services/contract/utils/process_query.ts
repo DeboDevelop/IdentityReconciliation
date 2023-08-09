@@ -37,30 +37,43 @@ export function identifyPrimaryAndMissing(
     contracts: InitialQueryContract[],
     email: string,
     phoneNumber: string
-): [number | null, number | null, boolean, boolean] {
+): [number | null, number | null, boolean, boolean, string, string] {
     let primary: number | null = null;
+    let primaryEmail: string = "";
+    let primaryPhoneNumber: string = "";
     let primaryLowPrec: number | null = null;
     let missingEmail = true;
     let missingPhone = true;
 
     contracts.forEach((contract) => {
-        if (contract.contractEmail == email) {
+        if (contract.contractEmail === email) {
             missingEmail = false;
         }
-        if (contract.contractPhoneNumber == phoneNumber) {
+        if (contract.contractPhoneNumber === phoneNumber) {
             missingPhone = false;
         }
         if (primary == null) {
             if (contract.contractLinkPrecedence == "primary") {
                 primary = contract.contractId;
+                primaryEmail = contract.contractEmail;
+                primaryPhoneNumber = contract.contractPhoneNumber;
             } else {
                 primary = contract.contractLinkedId;
+                if (
+                    contract.parentContractEmail !== null &&
+                    contract.parentContractPhoneNumber !== null
+                ) {
+                    primaryEmail = contract.parentContractEmail;
+                    primaryPhoneNumber = contract.parentContractPhoneNumber;
+                }
             }
         } else {
             if (contract.contractLinkPrecedence == "primary") {
                 if (primary > contract.contractId) {
                     primaryLowPrec = primary;
                     primary = contract.contractId;
+                    primaryEmail = contract.contractEmail;
+                    primaryPhoneNumber = contract.contractPhoneNumber;
                 } else if (primary < contract.contractId) {
                     primaryLowPrec = contract.contractId;
                 }
@@ -71,6 +84,13 @@ export function identifyPrimaryAndMissing(
                 ) {
                     primaryLowPrec = primary;
                     primary = contract.contractLinkedId;
+                    if (
+                        contract.parentContractEmail !== null &&
+                        contract.parentContractPhoneNumber !== null
+                    ) {
+                        primaryEmail = contract.parentContractEmail;
+                        primaryPhoneNumber = contract.parentContractPhoneNumber;
+                    }
                 } else if (primary < contract.contractId) {
                     primaryLowPrec = contract.contractLinkedId;
                 }
@@ -78,5 +98,20 @@ export function identifyPrimaryAndMissing(
         }
     });
 
-    return [primary, primaryLowPrec, missingEmail, missingPhone];
+    if (missingEmail === true && email === null) {
+        missingEmail = false;
+    }
+
+    if (missingPhone === true && phoneNumber === null) {
+        missingPhone = false;
+    }
+
+    return [
+        primary,
+        primaryLowPrec,
+        missingEmail,
+        missingPhone,
+        primaryEmail,
+        primaryPhoneNumber,
+    ];
 }
