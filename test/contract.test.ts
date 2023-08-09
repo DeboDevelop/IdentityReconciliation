@@ -10,7 +10,7 @@ const request = supertest(app);
 
 async function insertContract(values: any[]): Promise<QueryResult> {
     const insertQuery = `
-        INSERT INTO Contract (phoneNumber, email, linkedId, linkPrecedence, createdAt, updatedAt, deletedAt)
+        INSERT INTO Contract (phone_number, email, linked_id, link_precedence, created_at, updated_at, deleted_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING id;
     `;
