@@ -2,7 +2,7 @@ import {
     ContractOutput,
     DBContract,
     InitialQueryContract,
-} from "../../../@types/contract";
+} from "../../../../@types/contract";
 
 export function processContracts(contracts: DBContract[]): ContractOutput {
     const output = {

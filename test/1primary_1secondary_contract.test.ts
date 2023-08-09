@@ -3,7 +3,7 @@ import supertest from "supertest";
 import app from "../src/index";
 import { QueryResult } from "pg";
 import logger from "../src/logger";
-import { ContractInput, ContractOutput } from "../src/@types/contract";
+import { ContractInput, ContractOutput } from "../@types/contract";
 import { insertContract, truncateContract } from "./utils/helper";
 
 const request = supertest(app);

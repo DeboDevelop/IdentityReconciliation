@@ -1,4 +1,4 @@
-import { InitialQueryContract, DBContract } from "../../../@types/contract";
+import { InitialQueryContract, DBContract } from "../../../../@types/contract";
 import { QueryResult } from "pg";
 import pool from "../../../database";
 

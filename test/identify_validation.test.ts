@@ -2,7 +2,7 @@ import { expect } from "chai";
 import supertest from "supertest";
 import app from "../src/index";
 import logger from "../src/logger";
-import { ContractInput } from "../src/@types/contract";
+import { ContractInput } from "../@types/contract";
 
 const request = supertest(app);
 

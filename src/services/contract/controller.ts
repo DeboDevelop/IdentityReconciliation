@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ContractOutput, InitialQueryContract } from "../../@types/contract";
+import { ContractOutput, InitialQueryContract } from "../../../@types/contract";
 import logger from "../../logger";
 import {
     createPrimaryContract,

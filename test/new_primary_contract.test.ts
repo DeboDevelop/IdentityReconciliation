@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import supertest from "supertest";
 import app from "../src/index";
-import { ContractInput, ContractOutput } from "../src/@types/contract";
+import { ContractInput, ContractOutput } from "../@types/contract";
 import { truncateContract } from "./utils/helper";
 
 const request = supertest(app);
