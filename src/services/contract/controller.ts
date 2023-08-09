@@ -3,6 +3,7 @@ import { ContractOutput, InitialQueryContract } from "../../@types/contract";
 import logger from "../../logger";
 import {
     createPrimaryContract,
+    createSecondaryContract,
     getContractsByEmailAndPhoneNumber,
     getContractsById,
     updateSecondaryContract,
@@ -26,7 +27,13 @@ export async function identityController(req: Request, res: Response) {
                 identifyPrimaryAndMissing(contracts, email, phoneNumber);
             if (primary !== null) {
                 if (primaryLowPrec !== null) {
-                    updateSecondaryContract(primary, primaryLowPrec);
+                    await updateSecondaryContract(primary, primaryLowPrec);
+                }
+                if (missingEmail) {
+                    await createSecondaryContract(primary, email, phoneNumber);
+                }
+                if (missingPhone) {
+                    await createSecondaryContract(primary, email, phoneNumber);
                 }
                 const dbcontracts = await getContractsById(primary);
                 const output: ContractOutput = processContracts(dbcontracts);

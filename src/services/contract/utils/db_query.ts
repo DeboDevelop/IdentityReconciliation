@@ -87,3 +87,22 @@ export async function getContractsById(
     const result: QueryResult<DBContract> = await pool.query(selectQuery);
     return result.rows;
 }
+
+export async function createSecondaryContract(
+    primaryContactId: number,
+    email: string,
+    phoneNumber: string
+): Promise<DBContract[]> {
+    const values = [
+        phoneNumber,
+        email,
+        primaryContactId,
+        "secondary",
+        new Date(),
+        new Date(),
+        null,
+    ];
+
+    const result: QueryResult<DBContract> = await insertContract(values);
+    return result.rows;
+}
