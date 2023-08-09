@@ -36,7 +36,10 @@ process.on('SIGTERM', shutdown);
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
-    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    logger.error('Unhandled Rejection at:');
+    logger.error(promise);
+    logger.error('reason:');
+    logger.error(reason);
     // Recommended to close the server and exit the process when there are unhandled promise rejections
     shutdown();
 });
