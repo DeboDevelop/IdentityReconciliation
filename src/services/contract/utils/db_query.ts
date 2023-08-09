@@ -30,3 +30,28 @@ export async function getContracts(email: string | null, phoneNumber: string | n
     const result: QueryResult<Contract> = await pool.query(query);
     return result.rows;
 }
+
+async function insertContract(values: any[]): Promise<QueryResult> {
+    const insertQuery = `
+        INSERT INTO Contract (phoneNumber, email, linkedId, linkPrecedence, createdAt, updatedAt, deletedAt)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id;
+    `;
+
+    return await pool.query(insertQuery, values);
+}
+
+export async function createPrimaryContract(email: string, phoneNumber: string): Promise<number> {
+    const values = [
+        phoneNumber,
+        email,
+        null,
+        'primary',
+        new Date(),
+        new Date(),
+        null,
+    ];
+    
+    const result: QueryResult<{ id: number }> = await insertContract(values);
+    return result.rows[0].id;
+  }

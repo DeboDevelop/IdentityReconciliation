@@ -1,16 +1,20 @@
 import { Request, Response } from 'express';
 import { ContractOutput } from "../../@types/contract";
 import logger from '../../logger';
-import { getContracts } from './utils/db_query';
+import { createPrimaryContract, getContracts } from './utils/db_query';
 
 export async function identityController(req: Request, res: Response) {
     try {
         const { email, phoneNumber } = req.body;
         const contracts = await getContracts(email, phoneNumber);
-        logger.info(contracts);
+        // TODO: Remove default value
+        let primaryContractId = 0;
+        if (contracts.length == 0) {
+            primaryContractId = await createPrimaryContract(email, phoneNumber);
+        }
         const output: ContractOutput = {
             contact: {
-                primaryContractId: 0,
+                primaryContractId: primaryContractId,
                 emails: [],
                 phoneNumbers: [],
                 secondaryContactIds: [],
