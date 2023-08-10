@@ -30,14 +30,8 @@ export async function identityController(req: Request, res: Response) {
             // - Primary contracts to be converted to secondary
             // - Whether the request has new information (marked by missingEmail or missingPhone)
             // - Email and phone number of the primary record
-            const [
-                primary,
-                primaryLowPrec,
-                missingEmail,
-                missingPhone,
-                primaryEmail,
-                primaryPhoneNumber,
-            ] = identifyPrimaryAndMissing(contracts, email, phoneNumber);
+            const [primary, primaryLowPrec, missingEmail, missingPhone] =
+                identifyPrimaryAndMissing(contracts, email, phoneNumber);
             if (primary !== null) {
                 if (primaryLowPrec !== null) {
                     // Convert the primary record into secondary, as well as all secondary
@@ -46,11 +40,7 @@ export async function identityController(req: Request, res: Response) {
                 }
                 if (missingEmail || missingPhone) {
                     // Create secondary records for new email/phoneNumber found in the request
-                    await createSecondaryContract(
-                        primary,
-                        email === null ? primaryEmail : email,
-                        phoneNumber === null ? primaryPhoneNumber : phoneNumber
-                    );
+                    await createSecondaryContract(primary, email, phoneNumber);
                 }
                 // Fetch all data with the primary id – this will also fetch missing records that
                 // were not found while querying with email and phoneNumber

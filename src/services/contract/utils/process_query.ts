@@ -37,10 +37,8 @@ export function identifyPrimaryAndMissing(
     contracts: InitialQueryContract[],
     email: string,
     phoneNumber: string
-): [number | null, number | null, boolean, boolean, string, string] {
+): [number | null, number | null, boolean, boolean] {
     let primary: number | null = null;
-    let primaryEmail: string = "";
-    let primaryPhoneNumber: string = "";
     let primaryLowPrec: number | null = null;
     let missingEmail = true;
     let missingPhone = true;
@@ -56,18 +54,9 @@ export function identifyPrimaryAndMissing(
             // If the contract is marked as primary, update the primary variable
             if (contract.contractLinkPrecedence == "primary") {
                 primary = contract.contractId;
-                primaryEmail = contract.contractEmail;
-                primaryPhoneNumber = contract.contractPhoneNumber;
             } else {
                 // Otherwise, mark its parent as primary
                 primary = contract.contractLinkedId;
-                if (
-                    contract.parentContractEmail !== null &&
-                    contract.parentContractPhoneNumber !== null
-                ) {
-                    primaryEmail = contract.parentContractEmail;
-                    primaryPhoneNumber = contract.parentContractPhoneNumber;
-                }
             }
         } else {
             if (contract.contractLinkPrecedence == "primary") {
@@ -76,8 +65,6 @@ export function identifyPrimaryAndMissing(
                 if (primary > contract.contractId) {
                     primaryLowPrec = primary;
                     primary = contract.contractId;
-                    primaryEmail = contract.contractEmail;
-                    primaryPhoneNumber = contract.contractPhoneNumber;
                 } else if (primary < contract.contractId) {
                     primaryLowPrec = contract.contractId;
                 }
@@ -90,13 +77,6 @@ export function identifyPrimaryAndMissing(
                 ) {
                     primaryLowPrec = primary;
                     primary = contract.contractLinkedId;
-                    if (
-                        contract.parentContractEmail !== null &&
-                        contract.parentContractPhoneNumber !== null
-                    ) {
-                        primaryEmail = contract.parentContractEmail;
-                        primaryPhoneNumber = contract.parentContractPhoneNumber;
-                    }
                 } else if (primary < contract.contractId) {
                     primaryLowPrec = contract.contractLinkedId;
                 }
@@ -105,21 +85,14 @@ export function identifyPrimaryAndMissing(
     });
 
     // If email is marked as missing but is null, we want to avoid creating a record with null email
-    if (missingEmail === true && email === null) {
+    if (missingEmail && email === null) {
         missingEmail = false;
     }
 
     // If phoneNumber is marked as missing but is null, we want to avoid creating a record with null phoneNumber
-    if (missingPhone === true && phoneNumber === null) {
+    if (missingPhone && phoneNumber === null) {
         missingPhone = false;
     }
 
-    return [
-        primary,
-        primaryLowPrec,
-        missingEmail,
-        missingPhone,
-        primaryEmail,
-        primaryPhoneNumber,
-    ];
+    return [primary, primaryLowPrec, missingEmail, missingPhone];
 }
