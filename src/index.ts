@@ -1,6 +1,8 @@
 require("dotenv").config();
 import express from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
+import specs from "./swagger";
 import pool from "./database";
 import logger from "./logger";
 import contractRoutes from "./services/contract/routes";
@@ -12,6 +14,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/", contractRoutes);
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // Graceful termination function
 const shutdown = async () => {
