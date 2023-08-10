@@ -6,6 +6,7 @@ import specs from "./swagger";
 import pool from "./database";
 import logger from "./logger";
 import contractRoutes from "./services/contract/routes";
+import notFoundRoute from "./services/notFound/routes";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ app.use(cors());
 
 app.use("/", contractRoutes);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
+app.use(notFoundRoute);
 
 // Graceful termination function
 const shutdown = async () => {
