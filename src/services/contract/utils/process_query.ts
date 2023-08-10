@@ -52,12 +52,14 @@ export function identifyPrimaryAndMissing(
         if (contract.contractPhoneNumber === phoneNumber) {
             missingPhone = false;
         }
-        if (primary == null) {
+        if (primary === null) {
+            // If the contract is marked as primary, update the primary variable
             if (contract.contractLinkPrecedence == "primary") {
                 primary = contract.contractId;
                 primaryEmail = contract.contractEmail;
                 primaryPhoneNumber = contract.contractPhoneNumber;
             } else {
+                // Otherwise, mark its parent as primary
                 primary = contract.contractLinkedId;
                 if (
                     contract.parentContractEmail !== null &&
@@ -69,6 +71,8 @@ export function identifyPrimaryAndMissing(
             }
         } else {
             if (contract.contractLinkPrecedence == "primary") {
+                // If a new primary with lower value is found, update the primary
+                // update primaryLowPrec with old primary value - this will be converted to secondary
                 if (primary > contract.contractId) {
                     primaryLowPrec = primary;
                     primary = contract.contractId;
@@ -78,6 +82,8 @@ export function identifyPrimaryAndMissing(
                     primaryLowPrec = contract.contractId;
                 }
             } else {
+                // If a new parent with a lower value is found, update the primary
+                // update primaryLowPrec with old primary value - this will be converted to secondary
                 if (
                     contract.contractLinkedId !== null &&
                     primary > contract.contractLinkedId
@@ -98,10 +104,12 @@ export function identifyPrimaryAndMissing(
         }
     });
 
+    // If email is marked as missing but is null, we want to avoid creating a record with null email
     if (missingEmail === true && email === null) {
         missingEmail = false;
     }
 
+    // If phoneNumber is marked as missing but is null, we want to avoid creating a record with null phoneNumber
     if (missingPhone === true && phoneNumber === null) {
         missingPhone = false;
     }
